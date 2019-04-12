@@ -37,6 +37,8 @@ def parse_refine_log(file):
     refine_df.loc[1, 'R_Rfree_start']=refine_df.loc[1,'Starting_Rwork']-refine_df.loc[1,'Starting_Rfree']
     refine_df.loc[1, 'R_Rfree_end']=refine_df.loc[1,'Ending_Rwork']-refine_df.loc[1,'Ending_Rfree']
     refine_df.loc[1,'delta_Rfree'] = refine_df.loc[1,'Starting_Rfree']-refine_df.loc[1,'Ending_Rfree']
+    #refine_df.loc[1, 'Rfree_thres']=((float(refine_df.loc[1,'Starting_Rfree'])*0.02)+float(refine_df.loc[1,'Starting_Rfree']))
+    #refine_df.loc[1,'Rdiff_thres']=((float(refine_df.loc[1,'R_Rfree_start'])*0.02)+float(refine_df.loc[1,'R_Rfree_start']))
     refine_df.loc[1,'Date']=now.strftime("%Y-%m-%d")
     print(pdb_name)
     return pdb_name
@@ -48,26 +50,37 @@ def heuristics_pass(refine_df):
     print(Rfree_thres)
     Rdiff_thres=((float(refine_df.loc[1,'R_Rfree_start'])*0.02)+float(refine_df.loc[1,'R_Rfree_start']))
     print(Rdiff_thres)
-    if float(refine_df.loc[1,'Ending_Rfree']) < Rfree_thres:
-        if float(refine_df.loc[1,'R_Rfree_end']) < Rdiff_thres:
+    print('Division:')
+    #print()
+    if ((float(refine_df.loc[1,'Starting_Rfree']))/(float(refine_df.loc[1,'Ending_Rfree'])))<2:
+        if ((float(refine_df.loc[1,'R_Rfree_start']))/(float(refine_df.loc[1,'R_Rfree_end']))) < 2:
             print('Passed')
             with open('threshold.txt', 'w') as file:
                 file.write('Passed')
         else:
             print('Failed')
             with open('threshold.txt', 'w') as file:
-                file.write('Failed')
+                file.write("Failed")#. \n Rfree_Threshold: {}, Ending_Rfree: {}\n Rdiff_Threshold: {}, Ending R Diff:{}".format(Rfree_thres, (float(refine_df.loc[1,'Ending_Rfree'])),(float(refine_df.loc[1,'Ending_Rfree'])), Rdiff_thres,(float(refine_df.loc[1,'R_Rfree_end']))))
     else:
         print('Failed')
+        #print ('Failed', 'Rfree Thresold:', Rfree_thres, 'Ending Rfree:', (float(refine_df.loc[1,'Ending_Rfree'])), 'Rdiff Threshold:', Rdiff_thres, 'Ending R Diff:', (float(refine_df.loc[1,'R_Rfree_end']), file=outfile.txt)
         with open('threshold.txt', 'w') as file:
-            file.write('Failed')
+            file.write("Failed")#. \n Rfree_Threshold: {}, Ending_Rfree: {}\n Rdiff_Threshold: {}, Ending R Diff:{}".format(Rfree_thres, (float(refine_df.loc[1,'Ending_Rfree'])),(float(refine_df.loc[1,'Ending_Rfree'])), Rdiff_thres,(float(refine_df.loc[1,'R_Rfree_end']))))
+            #file.write('{0}\n {1} {2}\n {3} {4}\n {5} {6}\n {7} {8}\n'.format('Failed', 'Rfree Thresold:', Rfree_thres, 'Ending Rfree:', (float(refine_df.loc[1,'Ending_Rfree'])), 'Rdiff Threshold:', Rdiff_thres, 'Ending R Diff:', (float(refine_df.loc[1,'R_Rfree_end']))))
+            #file.write('Failed')
+            #file.write(Rfree_thres)
+            #file.write(float(refine_df.loc[1,'Ending_Rfree']))
+            #file.write(Rdiff_thres)
+            #file.write(float(refine_df.loc[1,'R_Rfree_end']))
 
 
 def main(file):
     PDB=parse_refine_log(file)
     heuristics_pass(refine_df)
     refine_df.to_csv(PDB + '_refine_df.csv')
-    return('Continue')
+    #print(float(refine_df.loc[1,'R_Rfree_start']))
+    #print(float(refine_df.loc[1,'R_Rfree_end']))
+    #return('Continue')
     sys.exit(0)
 
 if __name__ == '__main__':
