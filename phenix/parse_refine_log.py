@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#last edited: 2019-04-09
+#last edited: 2019-04-12
 #last edited by: Stephanie Wankowicz
 
 import pandas as pd
@@ -78,8 +78,8 @@ def main(file):
     PDB=parse_refine_log(file)
     heuristics_pass(refine_df)
     refine_df.to_csv(PDB + '_refine_df.csv')
-    #print(float(refine_df.loc[1,'R_Rfree_start']))
-    #print(float(refine_df.loc[1,'R_Rfree_end']))
+    print(float(refine_df.loc[1,'R_Rfree_start']))
+    print(float(refine_df.loc[1,'R_Rfree_end']))
     #return('Continue')
     sys.exit(0)
 
