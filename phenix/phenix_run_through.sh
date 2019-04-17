@@ -24,7 +24,7 @@ while read line; do
   #download files
   wget https://files.rcsb.org/download/$PDB.pdb
   wget https://files.rcsb.org/download/$PDB-sf.cif
-
+  wget https://files.rcsb.org/download/${PDB}_phases.mtz
   #check to make sure your file exists. If it does not move onto the next item in the list.
   ##CHANGE THIS TO NOTIFY YOU!
   #if [ ! -f $PDB-sf.cif ]; then break; fi
@@ -42,7 +42,7 @@ while read line; do
     phenix.ready_set pdb_file_name=$PDB.pdb cif_file_name=elbow.${PDB}_pdb.001.cif
   else
     echo '________________________________________________________Running ready set without ligand.________________________________________________________'
-    phenix.ready_set pdb_file_name=$PDB.pdb
+    phenix.ready_set pdb_file_name=$PDB.pdb cif_file_name=${PDB}_ligand > readyset_output.txt
   fi
 
   #run refinement
@@ -63,8 +63,26 @@ while read line; do
   echo '________________________________________________________Starting extract python script________________________________________________________'
   python /Users/fraserlab/Documents/Stephanie/Parse_refine_log.py ${PDB}.updated_refine_001.log
 
+  echo '________________________________________________________Validating the Ligand________________________________________________________'
+  if [[ -e "elbow.${PDB}_pdb.001.cif" ]]; then  #only running this if we have a ligand
+    mmtbx.validate_ligands ${PDB}.updated_refine_001.pdb ${PDB}-sf.mtz ligand_code="PGR" #"${PDB}_ligand" #prints out ADPs and occs + additional information
+    phenix.pdb_interpretation ${PDB}.updated_refine_001.pdb write_geo=True
+    elbow.refine_geo_display ${PDB}.updated_refine_001.pdb.geo PGR residual_histogram=True #prints out deviations including ligand specific RMSD and RMSz values
+    #calculate the energy difference of the ligand in the model and it relaxed RM1/AM1, but can be linked to 3rd party packages
+    phenix.reduce ${PDB}.updated_refine_001.pdb > ${PDB}.updated_refine_001_h.pdb
+    phenix.elbow --chemical_component PGR --energy_validation=${PDB}.updated_refine_001_h.pdb
+  fi
+
+
+
   echo '________________________________________________________Begin Ensemble Refinement_______________________________________________________'
-  value=$(<threshold.txt)
-  echo $value
-  phenix.ensemble_refinement ${PDB}.updated.pdb ${PDB}-sf.mtz /Users/fraserlab/Documents/Stephanie/finalize.params refinement.input/monomers=elbow.${PDB}_pdb.001.cif
+  cont_var=$(cat "threshold.txt")
+  echo $cont_var
+
+  if [ "$cont_var" = "Passed1" ]; then
+    phenix.ensemble_refinement ${PDB}.updated_refine_001.pdb ${PDB}-sf.mtz elbow.${PDB}_pdb.001.cif /Users/fraserlab/Documents/Stephanie/finalize.params
+  else
+    echo "Skipping Ensemble Refinement"
+  fi
+  #for structures with ligands, should use harmonic restraints harmonic_restraints.selections=’resname PO4 and element P’
 done < $pdb_filelist
