@@ -4,13 +4,14 @@
 
 ##FOR i in 1..2, go though file and get the PDB, create new folder
 #input: txt file with first column being pdb codes
+
+#source Phenix
+source /Users/fraserlab/Documents/Stephanie/phenix-1.15.2-3472/build/bin/phenix #CHANGE THIS AS NEEDEd
+
 home_dir=$PWD
 echo $home_dir
 pdb_filelist='190408_HIV_Prot2.txt'
-#echo $pdb_filelist
-#cat $pdb_filelist| while read line;
-#while IFS=read line; do
-#for i in $pdb_filelist;
+
 while read line; do
   echo $line
   PDB=$line
@@ -42,8 +43,9 @@ while read line; do
     phenix.ready_set pdb_file_name=$PDB.pdb cif_file_name=elbow.${PDB}_pdb.001.cif
   else
     echo '________________________________________________________Running ready set without ligand.________________________________________________________'
-    phenix.ready_set pdb_file_name=$PDB.pdb cif_file_name=${PDB}_ligand > readyset_output.txt
+    phenix.ready_set pdb_file_name=$PDB.pdb cif_file_name=${PDB}_ligand >> readyset_output.txt
   fi
+
 
   #run refinement
   if [[ -e "elbow.${PDB}_pdb.001.cif" ]]; then
@@ -63,24 +65,50 @@ while read line; do
   echo '________________________________________________________Starting extract python script________________________________________________________'
   python /Users/fraserlab/Documents/Stephanie/Parse_refine_log.py ${PDB}.updated_refine_001.log
 
-  echo '________________________________________________________Validating the Ligand________________________________________________________'
+  echo '________________________________________________________Validating the Ligand from Original PDB________________________________________________________'
   if [[ -e "elbow.${PDB}_pdb.001.cif" ]]; then  #only running this if we have a ligand
-    mmtbx.validate_ligands ${PDB}.updated_refine_001.pdb ${PDB}-sf.mtz ligand_code="PGR" #"${PDB}_ligand" #prints out ADPs and occs + additional information
-    phenix.pdb_interpretation ${PDB}.updated_refine_001.pdb write_geo=True
-    elbow.refine_geo_display ${PDB}.updated_refine_001.pdb.geo PGR residual_histogram=True #prints out deviations including ligand specific RMSD and RMSz values
+    echo '________________________________________________________Extracting the Ligand Name_______________________________________________________'
+    python /Users/fraserlab/Documents/Stephanie/PDB_parser.py $PDB /Users/fraserlab/Documents/Stephanie/ligands_to_remove.csv
+    lig_name=$(cat "ligand_name.txt")
+
+    mmtbx.validate_ligands ${PDB}.pdb ${PDB}-sf.mtz ligand_code=$lig_name #"${PDB}_ligand" #prints out ADPs and occs + additional information
+    echo '________________________________________________________Phenix PDB Interpretation_______________________________________________________'
+    phenix.pdb_interpretation ${PDB}.pdb write_geo=True
+    echo '________________________________________________________Elbow Refine_Geo_Display_______________________________________________________'
+    elbow.refine_geo_display ${PDB}.pdb.geo PGR residual_histogram=True > save.txt #prints out deviations including ligand specific RMSD and RMSz values
     #calculate the energy difference of the ligand in the model and it relaxed RM1/AM1, but can be linked to 3rd party packages
-    phenix.reduce ${PDB}.updated_refine_001.pdb > ${PDB}.updated_refine_001_h.pdb
-    phenix.elbow --chemical_component PGR --energy_validation=${PDB}.updated_refine_001_h.pdb
+    echo '________________________________________________________Phenix Reduce_______________________________________________________'
+    phenix.reduce ${PDB}.pdb > ${PDB}_h.pdb
+    echo '________________________________________________________Phenix Elbow_______________________________________________________'
+    phenix.elbow --chemical_component $lig_name --energy_validation=${PDB}_h.pdb
   fi
 
+
+  echo '________________________________________________________Validating the Ligand after Initial Refinement________________________________________________________'
+  if [[ -e "elbow.${PDB}_pdb.001.cif" ]]; then  #only running this if we have a ligand
+    echo '________________________________________________________Extracting the Ligand Name_______________________________________________________'
+
+    mmtbx.validate_ligands ${PDB}.updated_refine_001.pdb ${PDB}-sf.mtz ligand_code=$lig_name #"${PDB}_ligand" #prints out ADPs and occs + additional information
+    echo '________________________________________________________Phenix PDB Interpretation_______________________________________________________'
+    phenix.pdb_interpretation ${PDB}.updated_refine_001.pdb write_geo=True
+    echo '________________________________________________________Elbow Refine_Geo_Display_______________________________________________________'
+    elbow.refine_geo_display ${PDB}.updated_refine_001.pdb.geo PGR residual_histogram=True > save.txt #prints out deviations including ligand specific RMSD and RMSz values
+    #calculate the energy difference of the ligand in the model and it relaxed RM1/AM1, but can be linked to 3rd party packages
+    echo '________________________________________________________Phenix Reduce_______________________________________________________'
+    phenix.reduce ${PDB}.updated_refine_001.pdb> ${PDB}.h_updated_refine_001.pdb
+    echo '________________________________________________________Phenix Elbow_______________________________________________________'
+    phenix.elbow --chemical_component $lig_name --energy_validation=${PDB}.h_updated_refine_001.pdb
+  fi
 
 
   echo '________________________________________________________Begin Ensemble Refinement_______________________________________________________'
   cont_var=$(cat "threshold.txt")
   echo $cont_var
 
-  if [ "$cont_var" = "Passed1" ]; then
-    phenix.ensemble_refinement ${PDB}.updated_refine_001.pdb ${PDB}-sf.mtz elbow.${PDB}_pdb.001.cif /Users/fraserlab/Documents/Stephanie/finalize.params
+  if [ "$cont_var" = "Passed" ]; then
+    echo "testing"
+    #sh /Users/fraserlab/Documents/Stephanie/grid_search_ens_refine.sh $PDB
+    #phenix.ensemble_refinement ${PDB}.updated_refine_001.pdb ${PDB}-sf.mtz elbow.${PDB}_pdb.001.cif /Users/fraserlab/Documents/Stephanie/finalize.params
   else
     echo "Skipping Ensemble Refinement"
   fi
