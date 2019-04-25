@@ -1,11 +1,12 @@
 #!/bin/bash
 
-#this must be done before you submit qfit or phenix to SGE since SGE cannot connect to the internet to download PDB!
+#this must be done before you submit to SGE since SGE cannot connect to the internet!
 
 cd /wynton/home/fraserlab/swankowicz/output
 
 pdb_filelist='/wynton/home/fraserlab/swankowicz/190419_Phenix_ensemble/190408_HIV_Prot2.txt'
 while read line; do
+
   echo $line
   PDB=$line
 
