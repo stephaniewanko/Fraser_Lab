@@ -1,16 +1,23 @@
 #!/bin/bash
-#SGE!
 
-##$ -l h_vmem=80G
-##$ -l mem_free=64G
-##$ -t 1-5
-##$ -l h_rt=100:00:00
+#$ -l h_vmem=80G
+#$ -l mem_free=64G
+#$ -t 1-5
+#$ -l h_rt=100:00:00
+#$ -pe smp 6
+#$ -R yes
+#$ -V
 
-#set up a new refinement
-#Stephanie Wankowicz 4/5/2019
+echo $NHOSTS
 
-for i in {1..5}; do echo $i
-  PDB_list=$(cat $HIV_Prot2.txt | head -n $i | tail -n 1)
-  echo $PDB_list
-  ./phenix_prep.sh PDB_list
-done
+source /wynton/home/fraserlab/swankowicz/phenix-1.15.2-3472/phenix_env.sh
+export PATH="/wynton/home/fraserlab/swankowicz/anaconda3/bin:$PATH"
+source activate qfit
+source activate phenix_ens
+which python
+
+input_file=/wynton/home/fraserlab/swankowicz/190419_Phenix_ensemble/HIV_Prot2.txt
+PDB=$(cat $PDB_file | head -n $SGE_TASK_ID | tail -n 1)
+echo $PDB
+cd /wynton/home/fraserlab/swankowicz/phenix_output/
+mkdir $PDB
