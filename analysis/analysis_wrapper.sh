@@ -19,4 +19,5 @@ for i in {1..2}; do
   echo $PDB
   cd $working_dir
   cd $PDB
-  cat 
+  lig_name=$(cat "ligand_name.txt")
+  python PDB_analysis.py -PDB=$PDB.pdb -sta=$lig_name
