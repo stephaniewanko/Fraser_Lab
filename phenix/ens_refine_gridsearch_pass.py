@@ -28,10 +28,10 @@ def grid_search_pass(log_file1, log_file2): #put in 2 log files
             print(Rfree_new)
     with open('ensemble_refinement_grid_search_tracker.txt', 'w') as file_tracker:
         file_tracker.write('Rfree_old: {1}, Rfree_new: {2}\n'.format(Rfree_old, Rfree_new))
-        file.write('{0}\n {1} {2}\n {3} {4}\n {5} {6}\n {7} {8}\n'.format('Failed', 'Rfree Thresold:',
+        file_tracker.write('{0}\n {1} {2}\n {3} {4}\n {5} {6}\n {7} {8}\n'.format('Failed', 'Rfree Thresold:',
     if Rfree_baseline>=Rfree_new: #if the Rfree is lower in the new ensemble_refinement, we want to replace it
         with open('ensemble_grid_search.txt', 'w') as file:
-                file.write("Passed")
+            file.write("Passed")
 
 def main(log_file1, log_file2):
     grid_search_pass(log_file1, log_file2)
