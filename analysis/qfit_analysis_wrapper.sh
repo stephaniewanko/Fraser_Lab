@@ -12,7 +12,7 @@ export PATH="/wynton/home/fraserlab/swankowicz/anaconda3/bin:$PATH"
 source activate phenix_ens
 which python
 
-#________________________________________________RUN PHENIX________________________________________________#
+#________________________________________________Qfit Analysis________________________________________________#
 for i in {1..20}; do
   apo_PDB=$(cat $apo_PDB_file | head -n $i | tail -n 1)
   echo $apo_PDB
