@@ -8,6 +8,15 @@
 #$ -R yes
 #$ -V
 
+#! /bin/bash
+
+#BSUB -J "Wankowicz_qfit_20190626"
+#BSUB -M 80
+#BSUB -J "qfit_test[1-10]
+#BSUB -W 100:00
+#BSUB -n 24
+#BSUB -o /mnt/home1/wankowicz/scripts
+
 #this script will run qfit based on the input PDB names you have.
 
 #________________________________________________INPUTS________________________________________________#
