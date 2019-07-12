@@ -16,6 +16,7 @@ def parse_log(log_file):
     ens_refine.loc[1,'pTLS']=open(log_file, 'r').read().splitlines()[4]
     ens_refine.loc[1,'weights']=open(log_file, 'r').read().splitlines()[6]
     ens_refine.loc[1,'output_location']=open(log_file, 'r').read().splitlines()[7]
+    output_location=open(log_file, 'r').read().splitlines()[7]
     log=open(log_file, 'r')
     for line in log:
         #if line.startswith('  RMSD (mean RMSD per structure)'):
@@ -28,6 +29,11 @@ def parse_log(log_file):
             ens_refine.loc[1,'Final_Rfree']=line.split('=')[2][1:7]
         if line.startswith('Ensemble size'):
             ens_refine.loc[1,'Ens_Size']=line.split(':')[1][2:4]
+     location=output_location+'/'+PDB+'_ens_refinement_output.csv'
+     ens_refine.to_csv(location, index=False)
+     with open('output_location.txt', 'w') as file: # this is going to overwrite
+        file.write(output_location)
+     return output_location
 
 
 if __name__ == '__main__':
