@@ -12,49 +12,68 @@ home_dir=$PWD
 echo $home_dir
 pdb_filelist='190408_HIV_Prot2.txt'
 
-while read line; do
-  echo $line
-  PDB=$line
-
+#while read line; do
+#  echo $line
+#  PDB=$line
+PDB=$1
+NSLOTS=$2
+echo $PDB
 
   #make sure you are in the home directory
-  cd $home_dir
-  mkdir $PDB
-  cd $PDB
+cd $home_dir
+mkdir $PDB
+cd $PDB
 
   #download files
-  wget https://files.rcsb.org/download/$PDB.pdb
-  wget https://files.rcsb.org/download/$PDB-sf.cif
-  wget https://files.rcsb.org/download/${PDB}_phases.mtz
+  #wget https://files.rcsb.org/download/$PDB.pdb
+  #wget https://files.rcsb.org/download/$PDB-sf.cif
+  #wget https://files.rcsb.org/download/${PDB}_phases.mtz
   #check to make sure your file exists. If it does not move onto the next item in the list.
   ##CHANGE THIS TO NOTIFY YOU!
   #if [ ! -f $PDB-sf.cif ]; then break; fi
   #if [ ! -f $PDB.pdb ]; then break; fi
 
+  #get ligand name
+~/anaconda3/envs/phenix_ens/bin/python /wynton/home/fraserlab/swankowicz/190419_Phenix_ensemble/PDB_ligand_parser.py $PDB /wynton/home/fraserlab/swankowicz/190419_Phenix_ensemble/ligands_to_re$
+lig_name=$(cat "ligand_name.txt")
+echo $lig_name
+
   #pre-processing phenix
-  echo '________________________________________________________Starting Phenix elbow________________________________________________________'
-  phenix.elbow $PDB.pdb
-  echo '________________________________________________________Starting Phenix cif as mtz________________________________________________________'
-  phenix.cif_as_mtz $PDB-sf.cif --extend_flags
+echo '________________________________________________________Starting Phenix elbow________________________________________________________'
+phenix.elbow $PDB.pdb --residue $lig_name --final_geometry
+echo '________________________________________________________Starting Phenix cif as mtz________________________________________________________'
+phenix.cif_as_mtz $PDB-sf.cif --extend_flags --merge
 
-  echo '________________________________________________________Starting Phenix Ready Set________________________________________________________'
-  if [[ -e "elbow.${PDB}_pdb.001.cif" ]]; then
-    echo '________________________________________________________Running ready set with ligand.________________________________________________________'
-    phenix.ready_set pdb_file_name=$PDB.pdb cif_file_name=elbow.${PDB}_pdb.001.cif
+echo '________________________________________________________Starting Phenix Ready Set________________________________________________________'
+phenix.ready_set pdb_file_name=$PDB.pdb #cif_file_name=elbow.${PDB}_pdb.001.cif > readyset_output.txt
+
+echo '________________________________________________________Checking on FOBS________________________________________________________'
+  if grep -F _refln.F_meas_au $PDB-sf.cif; then
+        echo 'FOBS'
   else
-    echo '________________________________________________________Running ready set without ligand.________________________________________________________'
-    phenix.ready_set pdb_file_name=$PDB.pdb cif_file_name=${PDB}_ligand >> readyset_output.txt
+      	echo 'SIGOBS'
   fi
+rm ${PDB}.updated_refine_*
 
-
-  #run refinement
-  if [[ -e "elbow.${PDB}_pdb.001.cif" ]]; then
+if [[ -e "${PDB}.ligands.cif" ]]; then
     echo '________________________________________________________Running refinement with ligand.________________________________________________________'
-    phenix.refine $PDB.updated.pdb $PDB-sf.mtz refinement.input.monomers="elbow.${PDB}_pdb.001.cif" /Users/fraserlab/Documents/Stephanie/finalize.params
+    if grep -F _refln.F_meas_au $PDB-sf.cif; then
+        phenix.refine $PDB.updated.pdb $PDB-sf.mtz ${PDB}.ligands.cif refinement.input.xray_data.r_free_flags.label=R-free-flags /wynton/home/fraserlab/swankowicz/190419_Phenix_ensemble/finalize$
+    else
+        echo 'SIGOBS'
+         phenix.refine $PDB.updated.pdb $PDB-sf.mtz ${PDB}.ligands.cif refinement.input.xray_data.r_free_flags.label=R-free-flags /wynton/home/fraserlab/swankowicz/190419_Phenix_ensemble/finaliz$
+    fi
+    #"elbow.${lig_name}.${PDB}_pdb.001.cif"
+    # ${PDB}.ligands.cif
+    ##refinement.input.monomers=elbow.${lig_name}.${PDB}_pdb.001.cif
   else
     echo '________________________________________________________Running refinement without ligand.________________________________________________________'
-    phenix.refine $PDB.updated.pdb $PDB-sf.mtz /Users/fraserlab/Documents/Stephanie/finalize.params
-  fi
+    if grep -F _refln.F_meas_au $PDB-sf.cif; then
+        phenix.refine $PDB.updated.pdb $PDB-sf.mtz /wynton/home/fraserlab/swankowicz/190419_Phenix_ensemble/finalize.params nproc=$NSLOTS refinement.input.xray_data.labels="FOBS,SIGFOBS" refinem$
+    else
+        phenix.refine $PDB.updated.pdb $PDB-sf.mtz /wynton/home/fraserlab/swankowicz/190419_Phenix_ensemble/finalize.params nproc=$NSLOTS refinement.input.xray_data.r_free_flags.label=R-free-fla$
+   fi
+ fi
 
   #get B-factors
   echo '________________________________________________________Starting Model versus Data________________________________________________________'
