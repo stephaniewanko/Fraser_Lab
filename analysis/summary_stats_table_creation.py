@@ -42,7 +42,14 @@ def create_table(count, pdb, ligand, num_res, org_mutli_atoms, org_num_multi, qf
     print(refine_log)
     ens_ref_log=pd.read_csv(ens_refine)
     print(ens_ref_log)
-    combined_df.to_csv('/wynton/home/fraserlab/swankowicz/190503_Targets/summary_table.csv')
+    print(combined_df)
+    #combined_df = pd.concat([combined_df, refine_log, ens_ref_log], axis=1, join_axes=[combined_df.index])
+    combined_df = combined_df.merge(refine_log, left_on='PDB_name', right_on='PDB')
+    combined_df = combined_df.merge(ens_ref_log, left_on='PDB_name', right_on='PDB')
+    print(combined_df)
+    final_df = final_df.append(combined_df, ignore_index=True)
+    final_df.to_csv('/wynton/home/fraserlab/swankowicz/190503_Targets/summary_table.csv', index=False)
+    print(final_df)
     return combined_df
 
 def parse_qfit_summary(file):
@@ -60,7 +67,7 @@ def main():
     org_mutli_atoms, org_num_multi=parse_qfit_summary(args.average_conf_org)
     qfit_mutli_atoms, qfit_num_multis=parse_qfit_summary(args.average_conf_qfit)
     print('Creating Table')
-    #create_table(count=args.pdb_num, pdb=args.pdb_name, ligand=args.ligand, num_res=args.num_res, org_mutli_atoms=org_mutli_atoms, org_num_multi=org_num_multi, qfti_mutli_atoms=qfti_mutli_atoms, qfit_num_multi=qfit_num_multi, refine=args.refine_log, ens_refine=args.ens_refine_log)
+    create_table(count=args.pdb_num, pdb=args.pdb_name, ligand=args.ligand, num_res=args.num_res, org_mutli_atoms=org_mutli_atoms, org_num_multi=org_num_multi, qfti_mutli_atoms=qfti_mutli_atoms, qfit_num_multi=qfit_num_multi, refine=args.refine_log, ens_refine=args.ens_refine_log)
 
 
 if __name__ == '__main__':
@@ -72,14 +79,3 @@ if __name__ == '__main__':
     main()
     print(combined_df)
 
-
-
-
-
-'''
-this is wrapped on the outside:
-for i in PDB_names
-combined_df=pd.DataFrame()
-    os.chdir('/Users/stephaniewankowicz/Dropbox/W18_rotation/Extract_Sort_Unique/')
-'''
-####################################################################
