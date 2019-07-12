@@ -82,22 +82,25 @@ if [[ -e "${PDB}.ligands.cif" ]]; then
 
   #extracting values from refinement log (we should have 001.log-> 010.log)
   echo '________________________________________________________Starting extract python script________________________________________________________'
-  python /Users/fraserlab/Documents/Stephanie/Parse_refine_log.py ${PDB}.updated_refine_001.log
-
+   ~/anaconda3/envs/phenix_ens/bin/python /Users/fraserlab/Documents/Stephanie/Parse_refine_log.py ${PDB}.updated_refine_001.log
+  rm lig_RMSZ_updated.txt
+  rm lig_RMSZ_pre_refine.txt
+  
   echo '________________________________________________________Validating the Ligand from Original PDB________________________________________________________'
-  if [[ -e "elbow.${PDB}_pdb.001.cif" ]]; then  #only running this if we have a ligand
-    echo '________________________________________________________Extracting the Ligand Name_______________________________________________________'
-    python /Users/fraserlab/Documents/Stephanie/PDB_parser.py $PDB /Users/fraserlab/Documents/Stephanie/ligands_to_remove.csv
-    lig_name=$(cat "ligand_name.txt")
+  if [[ -e "${PDB}.ligands.cif" ]]; then  #only running this if we have a ligand
+    echo $lig_name
 
-    mmtbx.validate_ligands ${PDB}.pdb ${PDB}-sf.mtz ligand_code=$lig_name #"${PDB}_ligand" #prints out ADPs and occs + additional information
+    #mmtbx.validate_ligands ${PDB}.pdb ${PDB}-sf.mtz ligand_code=$lig_name #"${PDB}_ligand" #prints out ADPs and occs + additional information
     echo '________________________________________________________Phenix PDB Interpretation_______________________________________________________'
     phenix.pdb_interpretation ${PDB}.pdb write_geo=True
+    
     echo '________________________________________________________Elbow Refine_Geo_Display_______________________________________________________'
-    elbow.refine_geo_display ${PDB}.pdb.geo PGR residual_histogram=True > save.txt #prints out deviations including ligand specific RMSD and RMSz values
+    elbow.refine_geo_display ${PDB}.pdb.geo $lig_name residual_histogram=True > ${PDB}_lig_RMSZ_pre_refine.txt #prints out deviations including ligand specific RMSD and RMSz values
     #calculate the energy difference of the ligand in the model and it relaxed RM1/AM1, but can be linked to 3rd party packages
+    
     echo '________________________________________________________Phenix Reduce_______________________________________________________'
     phenix.reduce ${PDB}.pdb > ${PDB}_h.pdb
+    
     echo '________________________________________________________Phenix Elbow_______________________________________________________'
     phenix.elbow --chemical_component $lig_name --energy_validation=${PDB}_h.pdb
   fi
@@ -118,6 +121,10 @@ if [[ -e "${PDB}.ligands.cif" ]]; then
     echo '________________________________________________________Phenix Elbow_______________________________________________________'
     phenix.elbow --chemical_component $lig_name --energy_validation=${PDB}.h_updated_refine_001.pdb
   fi
+
+  echo '________________________________________________________Validating Ligand Output_______________________________________________________'
+  ~/anaconda3/envs/phenix_ens/bin/python /wynton/home/fraserlab/swankowicz/190419_Phenix_ensemble/lig_geo_parser.py -pre_refine=lig_RMSZ_pre_refine.txt -post_refine=lig_RMSZ_updated.txt -PDB=$PDB
+
 
 
   echo '________________________________________________________Begin Ensemble Refinement_______________________________________________________'
