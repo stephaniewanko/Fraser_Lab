@@ -1,8 +1,7 @@
-Edited by Stephanie Wankowicz
+#Edited by Stephanie Wankowicz
 #began: 2019-05-01
 '''
 Excited States software: qFit 3.0
-
 Contributors: Saulo H. P. de Oliveira, Gydo van Zundert, Henry van den Bedem, Stephanie Wankowicz
 Contact: vdbedem@stanford.edu
 '''
@@ -43,7 +42,7 @@ def parse_args():
     p.add_argument('-r', "--resolution", type=float, default=None, metavar="<float>",
             help="Map resolution in angstrom. Only use when providing CCP4 map files.")
 
-p.add_argument("-m", "--resolution_min", type=float, default=None, metavar="<float>",
+    p.add_argument("-m", "--resolution_min", type=float, default=None, metavar="<float>",
             help="Lower resolution bound in angstrom. Only use when providing CCP4 map files.")
     p.add_argument("-z", "--scattering", choices=["xray", "electron"], default="xray",
             help="Scattering type.")
@@ -66,7 +65,7 @@ p.add_argument("-m", "--resolution_min", type=float, default=None, metavar="<flo
     p.add_argument('-bbs', "--backbone-step", dest="sample_backbone_step",
                    type=float, default=0.1, metavar="<float>",
                    help="Sample N-CA-CB angle.")
-p.add_argument('-sa', "--sample-angle", dest="sample_angle", action="store_true",
+    p.add_argument('-sa', "--sample-angle", dest="sample_angle", action="store_true",
             help="Sample N-CA-CB angle.")
     p.add_argument('-sas', "--sample-angle-step", dest="sample_angle_step",
                    type=float, default=3.75, metavar="<float>",
@@ -114,7 +113,6 @@ p.add_argument('-sa', "--sample-angle", dest="sample_angle", action="store_true"
                    help="Be verbose.")
     p.add_argument("--pdb", help="Name of the input PDB.")
 
-    #new RMSF arguments
     args = p.parse_args()
     return args
 
@@ -147,44 +145,52 @@ class B_factor():
         model_number = []
         select = self.structure.extract('record', 'ATOM', '==')
         n=0
-	for chain in np.unique(select.chain):
+        for chain in np.unique(select.chain):
             select2 = select.extract('chain', chain, '==')
+            print('select 2:')
+            print(select2)
             residues = set(list(select2.resi))
             residue_ids = []
             for i in residues:
+                print(i)
                 tmp_i = str(i)
                 if ':' in tmp_i:
                     resi = int(tmp_i.split(':')[1][1:])
                 else:
                     resi = tmp_i
+                print(resi)
                 residue_ids.append(resi)
-            for id in residue_ids:
-                res_tmp = select2.extract('resi', int(id), '==') #this is seperating each residues
-                #is this going to give us the alternative coordinate for everything?
-                resn_name = (np.array2string(np.unique(res_tmp.resi)), np.array2string(np.unique(res_tmp.resn)),np.array2string(np.unique(res_tmp.chain)))
-                b_factor = res_tmp.extract('b', '==')
-                print(b_factor)
+        n=1
+        for id in residue_ids:
+            print(id)
+            res_tmp = select2.extract('resi', int(id), '==') #this is seperating each residues
+            print(res_tmp)
+            #is this going to give us the alternative coordinate for everything?
+            resn_name = (np.array2string(np.unique(res_tmp.resi)), np.array2string(np.unique(res_tmp.resn)),np.array2string(np.unique(res_tmp.chain)))
+            #print(resn_name)
+            b_factor = res_tmp.b
+            #print(type(b_factor))
+            B_factor.loc[n,'resseq'] = resn_name[0]
+            B_factor.loc[n,'AA'] = resn_name[1]
+            B_factor.loc[n,'Chain'] = resn_name[2]
+            B_factor.loc[n,'Max_Bfactor'] = np.amax(b_factor)
+            B_factor.loc[n, 'Averaage_Bfactor'] = np.average(b_factor)
+            n+=1
+        #print(B_factor)
+        B_factor.to_csv(args.pdb_name+'_B_factors.csv', index=False)
 
-
-for model in Bio.PDB.PDBParser().get_structure(args.pdb_name, args.pdb):
-    for chain in model.get_list():
-        for residue in chain.get_list():
-            for atom in residue.get_list():
-                model_number.append(model)
-                atom_name.append(atom.get_name())
-                chain_ser.append(chain.get_id())
-                residue_name.append(str(residue)[9:13])
-                #print(str(residue)[9:13])
-                residue_num.append(residue.get_full_id()[3][1])
-                b_factor.append(atom.get_bfactor())
-                n=+1
-
-B_factor['Atom'] = atom_name
-B_factor['Chain'] = chain_ser
-B_factor['residue'] = residue_name
-B_factor['residue_num'] = residue_num
-B_factor['B_factor'] = b_factor
-B_factor['model'] = model_number
-B_factor['PDB_name'] = args.pdb_name
-B_factor.to_csv(args.pdb_name+'_B_factors.csv', index=False)
-
+def main():
+    args = parse_args()
+    try:
+        os.mkdir(args.directory)
+    except OSError:
+        pass
+    # Load structure and prepare it
+    structure = Structure.fromfile(args.structure).reorder() #put H20 on the bottom
+    if not args.hydro:
+        structure = structure.extract('e', 'H', '!=')
+    B_options = Bfactor_options()
+    B_options.apply_command_args(args)
+    time0 = time.time()
+    b_factor = B_factor(structure, B_options)
+    test = b_factor.run()
