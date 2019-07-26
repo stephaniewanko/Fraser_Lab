@@ -75,9 +75,9 @@ def heuristics_pass(refine_df):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-log_file')
+    p = argparse.ArgumentParser()
+    p.add_argument('-log_file')
     p.add_argument('-PDB')
-    args = parser.parse_args()
+    args = p.parse_args()
     parse_refine_log(args.log_file, args.PDB)
     refine_df.to_csv(args.PDB+'_refine_df.csv')
