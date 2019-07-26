@@ -44,15 +44,25 @@ else
 fi
 cd $output_file_name
 
-#checking FOBS versus IOBS
-if grep -F _refln.F_meas_au ../$PDB-sf.cif; then
-   echo 'FOBS'
-   phenix.ensemble_refinement ../${PDB}.updated_refine_001.pdb ../${PDB}-sf.mtz ../${PDB}.ligands.cif pTLS=$_pTLS wxray_coupled_tbath_offset=$_weights ts=1.0 output_file_prefix="$output_file_name" input.$
+if [ -z "$lig_name" ]; then
+   echo 'no ligand'
+   if grep -F _refln.F_meas_au ../$PDB-sf.cif; then
+     echo 'FOBS'
+     phenix.ensemble_refinement ../${PDB}.updated_refine_001.pdb ../${PDB}-sf.mtz ../${PDB}.ligands.cif wxray_coupled_tbath_offset=$_weights output_file_prefix="$output_file_name"
+   else
+     echo 'SIGOBS'
+     phenix.ensemble_refinement ../${PDB}.updated_refine_001.pdb ../${PDB}-sf.mtz ../${PDB}.ligands.cif wxray_coupled_tbath_offset=$_weights output_file_prefix="$output_file_name"
+   fi
 else
-   echo 'SIGOBS'
-   phenix.ensemble_refinement ../${PDB}.updated_refine_001.pdb ../${PDB}-sf.mtz ../${PDB}.ligands.cif pTLS=$_pTLS wxray_coupled_tbath_offset=$_weights ts=1.0 output_file_prefix="$output_file_name" input.$
+   echo 'ligand'
+   if grep -F _refln.F_meas_au ../$PDB-sf.cif; then
+     echo 'FOBS'
+     phenix.ensemble_refinement ../${PDB}.updated_refine_001.pdb ../${PDB}-sf.mtz ../${PDB}.ligands.cif wxray_coupled_tbath_offset=$_weights harmonic_restraints.selections='resname "'"$lig_name"'"' output_file_prefix="$output_file_name"
+   else
+     echo 'SIGOBS'
+     phenix.ensemble_refinement ../${PDB}.updated_refine_001.pdb ../${PDB}-sf.mtz ../${PDB}.ligands.cif wxray_coupled_tbath_offset=$_weights harmonic_restraints.selections='resname "'"$lig_name"'"' output_file_prefix="$output_file_name"
+  fi
 fi
-
 
 
 #phenix.ensemble_refinement ../${PDB}.updated_refine_001.pdb ../${PDB}-sf.mtz ../${PDB}.ligands.cif pTLS=$_pTLS wxray_coupled_tbath_offset=$_weights ts=1.0 output_file_prefix=$$
