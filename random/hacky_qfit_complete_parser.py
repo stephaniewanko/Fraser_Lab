@@ -15,7 +15,7 @@ def parse_refine_log(file):
             #print(line)
             if '[SUCCESS] qFit has been run successfully.' in line:
                 #print('found at line:', num)
-                pdb_line = num - 4
+                pdb_line = num - 6
                 #print(lines[pdb_line])
                 finished_pdbs.append(lines[pdb_line])
     with open('holo_pdb_finished_190820.txt', 'w') as file:
