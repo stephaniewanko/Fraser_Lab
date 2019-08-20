@@ -18,6 +18,8 @@ def parse_refine_log(file):
                 pdb_line = num - 4
                 #print(lines[pdb_line])
                 finished_pdbs.append(lines[pdb_line])
-    with open('pdb_finished.txt', 'w') as file:
+    with open('holo_pdb_finished_190820.txt', 'w') as file:
         for i in range(0,len(finished_pdbs)):
-            file.write(str(finished_pdbs[i]) + '\n')
+            file.write(str(finished_pdbs[i]))
+
+parse_refine_log('190820_holo_complete.txt')
