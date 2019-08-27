@@ -36,7 +36,7 @@ def parse_log(log_file):
             ens_refine.loc[1,'Final_Rfree']=line.split('=')[2][1:7]
         if line.startswith('Ensemble size'):
             ens_refine.loc[1,'Ens_Size']=line.split(':')[1][2:4]
-    location=PDB+'_'+weights+'_'+pTLS+'_ens_refinement_output.csv' #output_location+'/'+
+    location=PDB+'_'+output_name+'_'+weights+'_'+pTLS+'_ens_refinement_output.csv'
     print(ens_refine)
     ens_refine.to_csv(location, index=False)
     #with open('output_location.txt', 'w') as file: # this is going to overwrite
