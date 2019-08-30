@@ -33,6 +33,10 @@ cd $PDB
   #if [ ! -f $PDB-sf.cif ]; then break; fi
   #if [ ! -f $PDB.pdb ]; then break; fi
 
+#if you want to run amber
+
+phenix.amberprep ${PDB}.pdb
+
   #get ligand name
 ~/anaconda3/envs/phenix_ens/bin/python /wynton/home/fraserlab/swankowicz/190419_Phenix_ensemble/PDB_ligand_parser.py $PDB /wynton/home/fraserlab/swankowicz/190419_Phenix_ensemble/ligands_to_re$
 lig_name=$(cat "ligand_name.txt")
@@ -133,7 +137,7 @@ if [[ -e "${PDB}.ligands.cif" ]]; then
 
   if [ "$cont_var" = "Passed" ]; then
     echo "testing"
-    #sh /Users/fraserlab/Documents/Stephanie/grid_search_ens_refine.sh $PDB
+    qsub /Users/fraserlab/Documents/Stephanie/grid_search_ens_refine.sh $PDB $3 #$3==base_directory
     #phenix.ensemble_refinement ${PDB}.updated_refine_001.pdb ${PDB}-sf.mtz elbow.${PDB}_pdb.001.cif /Users/fraserlab/Documents/Stephanie/finalize.params
   else
     echo "Skipping Ensemble Refinement"
