@@ -26,16 +26,17 @@ def parse_log(log_file):
     #output_location=open(log_file, 'r').read().splitlines()[7]
     log=open(log_file, 'r')
     for line in log:
-        #if line.startswith('  RMSD (mean RMSD per structure)'):
-            #bond=(next(log), end='')#.split(":")[1]
-            #angle=(next(log), end='')#.split(":")[1]
-            #bond=(next(log), end='')#.split(":")[1]
-            #print(bond)
         if line.startswith('FINAL Rwork'):
             ens_refine.loc[1,'Final_Rwork']=line.split('=')[1][1:7]
             ens_refine.loc[1,'Final_Rfree']=line.split('=')[2][1:7]
-        if line.startswith('Ensemble size'):
+        elif line.startswith('Ensemble size :'):
             ens_refine.loc[1,'Ens_Size']=line.split(':')[1].strip('\n')
+        elif line.startswith('  ensemble_reduction_rfree_tolerance'):
+           #print(line)   
+           ens_refine.loc[1,'Ens_Red_Rfree_Tol'] = line.split('=')[1].strip('\n')
+        elif line.startswith('  ensemble_reduction'):
+           #print(line)
+           ens_refine.loc[1,'Ens_Red'] = line.split('=')[1].strip('\n')
     location=PDB+'_'+output_name+'_'+weights+'_'+pTLS+'_ens_refinement_output.csv'
     print(ens_refine)
     ens_refine.to_csv(location, index=False)
