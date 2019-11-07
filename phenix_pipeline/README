@@ -1,0 +1,18 @@
+Before running the pipeline the directory should be set up like:
+basedir/PDB/
+
+Inside each of these folders, you should have the PDB, MTZ file, cif files.
+
+You can also set this directory up and download these files using wget_processing.sh
+
+The pipeline consists of:
+
+  1) Running refinement (refinement_runthrough.sh)
+    **MAKE SURE TO UPDATE PHENIX PATH AND PYTHON PATH**
+    -this runs refinement using 8 macro cycles and other parameters based on finalize.params file
+    -there are also some validation scripts in there to look at the geometry of ligands. 
+    -Parse_refine_log.py grabs some values from the log file including Rfree, Rwork
+  
+  2) Run ensemble refinement using grid search
+  
+  
