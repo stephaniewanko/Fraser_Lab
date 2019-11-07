@@ -19,6 +19,9 @@ while read -r line; do
   fi
   #mkdir $PDB
   cd $PDB
+  phenix.fetch_pdb $PDB
+  phenix.fetch_pdb $PDB --mtz
+  phenix.fetch_pdb $PDB -x
   wget https://files.rcsb.org/download/${PDB}.pdb
   wget https://files.rcsb.org/download/${PDB}-sf.cif
   wget http://edmaps.rcsb.org/coefficients/${PDB}.mtz
