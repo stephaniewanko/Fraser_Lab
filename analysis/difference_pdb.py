@@ -1,6 +1,7 @@
 #find differences between 2 PDB files
 #Stephanie Wankowicz
 #19-11-07
+#run using phenix.python
 
 from __future__ import division
 import iotbx.pdb
