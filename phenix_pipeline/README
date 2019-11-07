@@ -11,7 +11,8 @@ The pipeline consists of:
     **MAKE SURE TO UPDATE PHENIX PATH AND PYTHON PATH**
     -this runs refinement using 8 macro cycles and other parameters based on finalize.params file
     -there are also some validation scripts in there to look at the geometry of ligands. 
-    -Parse_refine_log.py grabs some values from the log file including Rfree, Rwork
+    -Parse_refine_log.py (located in Fraser_Lab/phenix) grabs some values from the log file including Rfree, Rwork
+    -PDB_ligand_parser.py (located in Fraser_Lab/phenix) determines if there is a ligand of interest (>=10 heavy atoms) and assigns it as the ligand for the pipeline.
   
   2) Run ensemble refinement using grid search
     -this will produce an 9 folders named with each of the grid search parameters. 
