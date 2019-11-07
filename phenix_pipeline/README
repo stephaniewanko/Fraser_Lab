@@ -14,5 +14,6 @@ The pipeline consists of:
     -Parse_refine_log.py grabs some values from the log file including Rfree, Rwork
   
   2) Run ensemble refinement using grid search
+    -this will produce an 9 folders named with each of the grid search parameters. 
   
   
