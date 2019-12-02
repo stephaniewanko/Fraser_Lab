@@ -38,7 +38,7 @@ else
         echo 'IOBS'
 fi
 rm ${PDB}.updated_refine_*
-if [[ -e "4phenix_${PDB}.ligands.cif" ]]; then
+if [[ -e "${PDB}.ligands.cif" ]]; then
 echo '________________________________________________________Running refinement with ligand.________________________________________________________'
     if grep -F _refln.F_meas_au $PDB-sf.cif; then
         phenix.refine $PDB.updated.pdb $PDB-sf.mtz ${PDB}.ligands.cif refinement.input.xray_data.r_free_flags.label=R-free-flags /wynton/home/fraserlab/swankowicz/190419_Phenix_ensemble/finalize.params nproc=$NSLOTS refinement.input.xray_data.labels="FOBS,SIGFOBS" #use_amber=True amber.topology_file_name=4amber_${PDB}.prmtop amber.coordinate_file_name=4amber_${PDB}.rst7 amber.order_file_name=4amber_${PDB}.order 
