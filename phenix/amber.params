@@ -1,0 +1,1 @@
+#use_amber=True amber.topology_file_name=4amber_${PDB}.prmtop amber.coordinate_file_name=4amber_${PDB}.rst7 amber.order_file_name=4amber_${PDB}.order 
