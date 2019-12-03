@@ -8,8 +8,6 @@
 #file=/wynton/group/fraser/swankowicz/PDB_2A_res_w_lig_191123_2001_2500.txt
 #for line in $(cat $file); do
    line=$1
-   echo 'first' >> /wynton/group/fraser/swankowicz/191123_pdbs_examined.txt
-   echo $line >> /wynton/group/fraser/swankowicz/191123_pdbs_examined.txt
    if grep -Fxq ${line} /wynton/group/fraser/swankowicz/nomtz_191123.txt; then
       exit 1
    else
@@ -21,10 +19,6 @@
          echo 'no mtz'
          exit 1
       else
-         if [ ! -f /wynton/group/fraser/swankowicz/mtz/191114/pdb${line}.ent ]; then
-             cp /netapp/database/pdb/remediated/pdb/${mid}/pdb${line}.ent.gz /wynton/group/fraser/swankowicz/mtz/191114/
-             gunzip pdb${line}.ent.gz
-         fi
          RESO1=$(grep ${line} /wynton/group/fraser/swankowicz/space_unit_reso_191118.txt | head -n 1 | awk '{print $2}')
          SPACE1=$(grep ${line} /wynton/group/fraser/swankowicz/space_unit_reso_191118.txt | head -n 1 | awk '{print $3}')
          RESO1_lower=$(echo ${RESO1}-0.1 | bc -l)
@@ -61,7 +55,15 @@
          SPACE2=$(grep ${line2} /wynton/group/fraser/swankowicz/space_unit_reso_191118.txt | head -n 1 | awk '{print $3}')
          if (( `echo ${RESO2}'<='${RESO1_upper} | bc` )) && (( `echo ${RESO2}'>='${RESO1_lower} | bc` )); then
            if [ $SPACE1 == $SPACE2 ]; then
-             echo ${line2} >> /wynton/group/fraser/swankowicz/pairs/${line}_potential_pairs.txt
+             UNIT2=$(grep ${line2} /wynton/group/fraser/swankowicz/space_unit_reso_191118.txt | tail -n 1 | sed "s/[(),]//g" | awk '{print $4,$5,$6,$7,$8,$9}')
+             UNIT2=( $UNIT2 )
+             if (( $(echo "${UNIT2[0]} <= ${UNIT1_0_upper}" |bc -l) )) && (( $(echo "${UNIT2[0]} >= ${UNIT1_0_lower}" |bc -l) )) && (( $(echo "${UNIT2[1]} <= ${UNIT1_1_upper}" |bc -l) )) && (( $(echo "${UNIT2[1]} >= ${UNIT1_1_lower}" |bc -l) )) && (( $(echo "${UNIT2[2]} <= ${UNIT1_2_upper}" |bc -l) )) && (( $(echo "${UNIT2[2]} >= ${UNIT1_2_lower}" |bc -l) )); then
+                echo 'pair1' 
+                if (( $(echo "${UNIT2[3]} <= ${UNIT1_3_upper}"|bc -l) )) && (( $(echo "${UNIT2[3]} >= ${UNIT1_3_lower}" |bc -l) )) && (( $(echo "${UNIT2[4]} <= ${UNIT1_4_upper}" |bc -l) )) && (( $(echo "${UNIT2[4]} >= ${UNIT1_4_lower}" |bc -l) )) &&  (( $(echo "${UNIT2[5]} <= ${UNIT1_5_upper}" |bc -l) )) && (( $(echo "${UNIT2[5]} >= ${UNIT1_5_lower}" |bc -l) )); then
+                   echo 'pair2'
+                   echo ${line2} >> /wynton/group/fraser/swankowicz/pairs/${line}_potential_pairs.txt
+                fi
+             fi
            fi
          fi
       fi
@@ -76,14 +78,9 @@
        fi
        RESO2=$(grep ${line2} /wynton/group/fraser/swankowicz/space_unit_reso_191118.txt | head -n 1 | awk '{print $2}')
        UNIT2=$(grep ${line2} /wynton/group/fraser/swankowicz/space_unit_reso_191118.txt | tail -n 1 | sed "s/[(),]//g" | awk '{print $4,$5,$6,$7,$8,$9}')
-       UNIT2=( $UNIT2 )
-       if (( $(echo "${UNIT2[0]} <= ${UNIT1_0_upper}" |bc -l) )) && (( $(echo "${UNIT2[0]} >= ${UNIT1_0_lower}" |bc -l) )) && (( $(echo "${UNIT2[1]} <= ${UNIT1_1_upper}" |bc -l) )) && (( $(echo "${UNIT2[1]} >= ${UNIT1_1_lower}" |bc -l) )) && (( $(echo "${UNIT2[2]} <= ${UNIT1_2_upper}" |bc -l) )) && (( $(echo "${UNIT2[2]} >= ${UNIT1_2_lower}" |bc -l) )); then
-              echo 'pair1' 
-              if (( $(echo "${UNIT2[3]} <= ${UNIT1_3_upper}"|bc -l) )) && (( $(echo "${UNIT2[3]} >= ${UNIT1_3_lower}" |bc -l) )) && (( $(echo "${UNIT2[4]} <= ${UNIT1_4_upper}" |bc -l) )) && (( $(echo "${UNIT2[4]} >= ${UNIT1_4_lower}" |bc -l) )) &&  (( $(echo "${UNIT2[5]} <= ${UNIT1_5_upper}" |bc -l) )) && (( $(echo "${UNIT2[5]} >= ${UNIT1_5_lower}" |bc -l) )); then
-                echo 'pair2'
-                SEQ2=$(~/anaconda3/envs/qfit3/bin/python /wynton/group/fraser/swankowicz/get_seq.py /wynton/group/fraser/swankowicz/mtz/191114/pdb${line2}.ent)
-                echo $SEQ1
-                echo $SEQ2
+       SEQ2=$(~/anaconda3/envs/qfit3/bin/python /wynton/group/fraser/swankowicz/get_seq.py /wynton/group/fraser/swankowicz/mtz/191114/pdb${line2}.ent)
+       echo $SEQ1
+       echo $SEQ2
                 if [[ -z ${SEQ1} ]]; then
                     echo 'no seq1'
                     exit 1
