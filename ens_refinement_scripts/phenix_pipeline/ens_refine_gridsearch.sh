@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 
 #$ -l h_vmem=80G
 #$ -l mem_free=64G
@@ -7,11 +7,9 @@
 
 #grid search for ensemble_refinement
 #Stephanie Wankowicz 
-#4/30/2019
+#10/26/2019
 
-#source /wynton/home/fraserlab/swankowicz/phenix-1.15.2-3472/phenix_env.sh
 source /wynton/home/fraserlab/swankowicz/phenix-installer-dev-3594-intel-linux-2.6-x86_64-centos6/phenix-dev-3594/phenix_env.sh
-#source /wynton/home/fraserlab/swankowicz/phenix-1.8.2-1309/phenix_env.sh
 export PATH="/wynton/home/fraserlab/swankowicz/anaconda3/bin:$PATH"
 source activate phenix_ens
 which python
@@ -19,7 +17,7 @@ which python
 
 
 PDB=$1
-base_dir=$2 #'/wynton/home/fraserlab/swankowicz/20190708_Ens_Paper/new_phenix/'
+base_dir=$2 
 cd $working_dir
 echo $PDB
 cd $PDB
@@ -48,6 +46,7 @@ echo 'weights'
 echo $_weights
 echo 'tx'
 echo $_tx
+
 echo $PWD
 
 
@@ -69,19 +68,18 @@ if [ -z "$lig_list" ]; then
    echo 'no ligand'
    if grep -F _refln.F_meas_au ../$PDB-sf.cif; then
      echo 'FOBS'
-     phenix.ensemble_refinement ../${PDB}.updated_refine_001.pdb ../${PDB}-sf.mtz ../${PDB}.ligands.cif ptls=$_pTLS wxray_coupled_tbath_offset=$_weights output_file_prefix="$output_file_name" tx=$_tx input.xray_data.r_free_flags.generate=True input.xray_data.labels='F(+),SIGF(+),F(-),SIGF(-)' #use_amber=True
+     phenix.ensemble_refinement ../${PDB}.updated_refine_001.pdb ../${PDB}-sf.mtz ../${PDB}.ligands.cif ptls=$_pTLS wxray_coupled_tbath_offset=$_weights output_file_prefix="$output_file_name" tx=$_tx 
    else
      echo 'SIGOBS'
-     phenix.ensemble_refinement ../${PDB}.updated_refine_001.pdb ../${PDB}-sf.mtz ../${PDB}.ligands.cif ptls=$_pTLS wxray_coupled_tbath_offset=$_weights output_file_prefix="$output_file_name" tx=$_tx input.xray_data.r_free_flags.generate=True input.xray_data.labels='F(+),SIGF(+),F(-),SIGF(-)' #use_amber=True
+     phenix.ensemble_refinement ../${PDB}.updated_refine_001.pdb ../${PDB}-sf.mtz ../${PDB}.ligands.cif ptls=$_pTLS wxray_coupled_tbath_offset=$_weights output_file_prefix="$output_file_name" tx=$_tx
    fi
 else
    echo 'ligand'
    if grep -F _refln.F_meas_au ../$PDB-sf.cif; then
      echo 'FOBS'
-     phenix.ensemble_refinement ../${PDB}.updated_refine_001.pdb ../${PDB}-sf.mtz ../${PDB}.ligands.cif ptls=$_pTLS wxray_coupled_tbath_offset=$_weights harmonic_restraints.selections='"'"$lig_list"'"' output_file_prefix="$output_file_name" tx=$_tx input.xray_data.r_free_flags.generate=True input.xray_data.labels='F(+),SIGF(+),F(-),SIGF(-)' #use_amber=True
-   else
+     phenix.ensemble_refinement ../${PDB}.updated_refine_001.pdb ../${PDB}-sf.mtz ../${PDB}.ligands.cif ptls=$_pTLS wxray_coupled_tbath_offset=$_weights harmonic_restraints.selections='"'"$lig_list"'"' output_file_prefix="$output_file_name" tx=$_tx
      echo 'SIGOBS'
-     phenix.ensemble_refinement ../${PDB}.updated_refine_001.pdb ../${PDB}-sf.mtz ../${PDB}.ligands.cif ptls=$_pTLS wxray_coupled_tbath_offset=$_weights harmonic_restraints.selections='"'"$lig_list"'"' output_file_prefix="$output_file_name" tx=$_tx input.xray_data.r_free_flags.generate=True input.xray_data.labels='F(+),SIGF(+),F(-),SIGF(-)' #use_amber=True #tx=$_tx use_amber=True
+     phenix.ensemble_refinement ../${PDB}.updated_refine_001.pdb ../${PDB}-sf.mtz ../${PDB}.ligands.cif ptls=$_pTLS wxray_coupled_tbath_offset=$_weights harmonic_restraints.selections='"'"$lig_list"'"' output_file_prefix="$output_file_name" tx=$_tx 
   fi
 fi
 
