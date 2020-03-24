@@ -12,22 +12,58 @@ from matplotlib import rc
 plt.rcParams['font.family'] = 'Helvetica'
 
 #load in files 
-os.chdir('/Users/stephaniewankowicz/Downloads/')
 bait_prey = pd.read_csv('bait_preys.txt', sep='\t')
-
-os.chdir('/Users/stephaniewankowicz/Dropbox/Fraser_Rotation/outputs/')
 all_lung=pd.read_csv('gTEX_alllung.csv')
 gtex_subset=pd.read_csv('gTEX_subset.csv')
 gnomad_subset=pd.read_csv('gnomad_subset.csv')
 gtex_subset_drugs = pd.read_csv('gTEX_subset_drugs.csv')
-gtex_subset_interest = pd.read_csv('gTEX_subset_highinterest.csv')
 gnomad_subset_drugs = pd.read_csv('gnomad_subset_drugs.csv')
-gnomad_subset_interest = pd.read_csv('gnomad_subset_high_interest.csv')
 gnomad_random = pd.read_csv('gnomad_subset_random_5000.csv')
 
 
-#creating figure files
+#creating figure GTEX
 gtex_subset['label'] = 'Interacting Proteins'
 gtex_subset_drugs['label'] = 'Drug Target'
-gtex_subset_interest['label'] = 'High Interest'
-gtex_all = pd.concat([gtex_subset, gtex_subset_interest, gtex_subset_drugs], ignore_index=True)
+
+#subset drug list to those that have targets
+interacting_proteins = gtex_subset['Description'].to_numpy()
+gtex_subset_drugs2 = gtex_subset_drugs[gtex_subset_drugs['Description'].isin(interacting_proteins)].reset_index()
+gtex_all_figure = pd.concat([gtex_subset, gtex_subset_drugs2]) ignore_index=True)
+
+#calculate median TPM, Lung/Median TPM
+gtex_all_figure['median'] = gtex_all_figure.iloc[:,3:].mean(axis=1) #first three columns contain descriptions
+gtex_all_figure['Lung/Median'] = gtex_all_figure['Lung'] / gtex_all_figure['median']
+
+gtex_subset_drugs2['median'] = gtex_subset_drugs2.iloc[:,3:].mean(axis=1)
+gtex_subset_drugs2['Lung/Median'] = gtex_subset_drugs2['Lung'] / gtex_subset_drugs['median']
+
+#log10 values
+gtex_all_figure['Lung_log'] = np.log10(gtex_all_figure['Lung'])
+gtex_subset_drugs2['Lung_log'] = np.log10(gtex_subset_drugs2['Lung'])
+
+gtex_all_figure['Lung_Median_log'] = np.log10(gtex_all_figure['Lung/Median'])
+gtex_subset_drugs2['Lung_Median_log'] = np.log10(gtex_subset_drugs2['Lung/Median'])
+
+
+#GTEX MAIN TEXT FIGURE
+plt.figure(figsize=(7, 7))
+sns.set(font_scale = 1.5)
+
+ax = sns.scatterplot(gtex_all_figure['Lung_log'], gtex_all_figure['Lung_Median_log'], hue=gtex_all_figure['label'], palette=['lightgrey','red'])
+
+for line in range(0,gtex_subset_drugs2.shape[0]):
+    ax.text(gtex_subset_drugs2.Lung_log[line], gtex_subset_drugs2.Lung_Median_log[line], gtex_subset_drugs2.Description[line], size=15, color='black', verticalalignment='center', horizontalalignment='left')
+
+plt.xlabel('Lung Expression: log10(GTeX Median Lung TPM)', size=15)
+plt.ylabel('Lung Enrichment: log10(GTeX Median Lung/All Tissue TPM)', size=15)
+plt.title('')
+plt.axhline(y=0.0, color='darkblue', linestyle='-', linewidth=3, alpha=0.3)
+ax.patch.set_facecolor('white')
+inter = mpatches.Patch(color='lightgrey', label='Interacting Proteins')
+drug = mpatches.Patch(color='red', label='Drug Targets')
+plt.legend(handles=[inter, drug], loc='upper right', bbox_to_anchor=(1.05, 1), fontsize=15)
+plt.savefig("GTEX_figure.svg")  
+ 
+        
+
+
