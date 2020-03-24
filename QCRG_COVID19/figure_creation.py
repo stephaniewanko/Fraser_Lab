@@ -64,6 +64,30 @@ drug = mpatches.Patch(color='red', label='Drug Targets')
 plt.legend(handles=[inter, drug], loc='upper right', bbox_to_anchor=(1.05, 1), fontsize=15)
 plt.savefig("GTEX_figure.svg")  
  
-        
+ 
 
 
+#gnomad supplementary figure
+gnomad_subset_drugs['label'] = 'drug'
+gnomad_subset['label'] = 'subset'
+gnomad_random2['label'] = 'random'
+
+gnomad_subset_random = pd.concat([gnomad_random2, gnomad_subset])
+gnomad_subset_random['blank'] = '' #for weird matplotlib formating
+
+#GNOMAD FIGURE
+sns.set(font_scale=1.5)
+plt.figure(figsize=(15, 15)) 
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3, sharey=True)
+plt.style.use('seaborn-whitegrid')
+sns.violinplot(y=gnomad_subset_random['oe_lof'], x=gnomad_subset_random['test'],hue=gnomad_subset_random['label'], orient='v', split=True, inner=None, palette={"lightgrey", "dodgerblue"}, ax=ax1).set(xlabel='Loss of Function', ylabel='Observed/Expected Score')
+sns.violinplot(y=gnomad_subset_random["oe_mis"], x=gnomad_subset_random["test"], hue=gnomad_subset_random["label"], orient='v', split=True, inner=None,  palette={"lightgrey", "dodgerblue"}, ax=ax2).set(xlabel='Missense', ylabel='')
+sns.violinplot(y=gnomad_subset_random["oe_syn"], x=gnomad_subset_random["test"], hue=gnomad_subset_random["label"],  orient='v', split=True, inner=None, palette={"lightgrey", "dodgerblue"}, ax=ax3).set(xlabel='Synonymous', ylabel='')
+ax1.get_legend().remove()
+ax2.get_legend().remove()
+ax3.get_legend().remove()
+all_genes = mpatches.Patch(color='lightgrey', label='All RefSeq Genes')
+inter_prot = mpatches.Patch(color='dodgerblue', label='Interacting Proteins')
+plt.legend(handles=[all_genes, inter_protein], fontsize=15, loc='upper right', bbox_to_anchor=(3, 0))
+sns.set_style("white")
+plt.savefig("gnomad_figure_supplementary.jpg", bbox_inches = "tight", dpi=800)
