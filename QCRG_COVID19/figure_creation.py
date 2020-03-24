@@ -64,7 +64,24 @@ drug = mpatches.Patch(color='red', label='Drug Targets')
 plt.legend(handles=[inter, drug], loc='upper right', bbox_to_anchor=(1.05, 1), fontsize=15)
 plt.savefig("GTEX_figure.svg")  
  
- 
+#GTEX SUPPLEMENTARY FIGURE
+all_lung['Lung_Log'] = np.log(all_lung["Lung"])
+
+sns.set(style="white")
+plt.figure(figsize=(10, 10)) 
+all_genes = mpatches.Patch(color='lightgrey', label='All RefSeq Genes')
+inter_prot = mpatches.Patch(color='dodgerblue', label='Interacting Proteins')
+sns.boxenplot(all_lung['Lung_Log'], orient='v', color='lightgrey')#.set()
+b = sns.swarmplot(gtex_subset['Lung_Log'], orient='v', color="dodgerblue")#.set(xlabel='', ylabel='Lung Expression: log10(GTeX Median Lung TPM)', fontsize=20)
+
+plt.legend(handles=[all_genes, inter_prot], fontsize=15)
+b.set_ylabel("Lung Expression: log10(GTeX Median Lung TPM)",fontsize=15)
+plt.savefig("GTEX_alllung_expression_supplementary.jpg", bbox_inches = "tight", dpi=800)
+
+#stats
+print(scipy.stats.ttest_ind(all_lung['Lung'], gtex_subset['Lung']))
+print(all_lung['Lung'].median())
+print(gtex_subset2['Lung'].median())
 
 
 #gnomad supplementary figure
@@ -91,3 +108,17 @@ inter_prot = mpatches.Patch(color='dodgerblue', label='Interacting Proteins')
 plt.legend(handles=[all_genes, inter_protein], fontsize=15, loc='upper right', bbox_to_anchor=(3, 0))
 sns.set_style("white")
 plt.savefig("gnomad_figure_supplementary.jpg", bbox_inches = "tight", dpi=800)
+
+#gnomad statistics
+print(scipy.stats.ttest_ind(gnomad_subset['oe_lof'], gnomad_random['oe_lof']))
+print(gnomad_random['oe_lof'].median())
+print(gnomad_subset['oe_lof'].median())
+
+print(scipy.stats.ttest_ind(gnomad_subset['oe_mis'], gnomad_random['oe_mis']))
+print(gnomad_random['oe_mis'].median())
+print(gnomad_subset['oe_mis'].median())
+
+print(scipy.stats.ttest_ind(gnomad_subset['oe_syn'], gnomad_random['oe_syn']))
+print(gnomad_random['oe_syn'].median())
+print(gnomad_subset['oe_syn'].median())
+
