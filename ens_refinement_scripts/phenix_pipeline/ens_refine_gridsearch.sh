@@ -1,15 +1,15 @@
 !/bin/bash
 
-#$ -l h_vmem=80G
-#$ -l mem_free=64G
-#$ -l h_rt=100:00:00
+#$ -l h_vmem=8G
+#$ -l mem_free=6G
+#$ -l h_rt=20:00:00
 #$ -t 1-45
 
 #grid search for ensemble_refinement
 #Stephanie Wankowicz 
 #10/26/2019
 
-source /wynton/home/fraserlab/swankowicz/phenix-installer-dev-3594-intel-linux-2.6-x86_64-centos6/phenix-dev-3594/phenix_env.sh
+source #PHENIX
 export PATH="/wynton/home/fraserlab/swankowicz/anaconda3/bin:$PATH"
 source activate phenix_ens
 which python
