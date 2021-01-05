@@ -1,13 +1,14 @@
 #!/bin/bash
-#git: 07-12-2019
+#git: 01-05-2021
 #Stephanie Wankowicz
-#19-05-05
 
-#first grab all the files in the base directory that are grid_search
+'''
+This script will allow you to determine which ensemble from the grid search has the best Rfree. This can come from the output file from the qsub command or from the log file.
+'''
 
-base_dir='/wynton/home/fraserlab/swankowicz/'
-cd $base_dir
-ls grid_search_ens_refine.sh.o* > grid_search_files.txt
+base_dir='/wynton/home/fraserlab/swankowicz/' #where the log files are located
+cd ${base_di}
+ls grid_search_ens_refine.sh.o* > grid_search_files.txt #first grab all the files in the base directory that are grid search
 
 files=grid_search_files.txt
 while read -r line; do
@@ -17,17 +18,5 @@ while read -r line; do
   output_location=$(cat "output_location.txt")
   echo $_file
   echo $output_location
-  #mv $_file $output_location
-  #replace $file with e
   echo "$_file" | tr sh.o sh.e
-  #err_file="$_file" | tr sh.o sh.e
-  #mv $err_file $output_location
 done < $files
-
-#now do the same for regular phenix output
-  #grab ligand info
-  #grab rfree info
-
-#if $1=yes:
-  #go to folder and rbind the ligand info
-  #go to folder and rbind the ens_output_info
