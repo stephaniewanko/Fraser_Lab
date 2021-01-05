@@ -3,7 +3,6 @@
 #updated: 2020-01-20
 
 #source Phenix
-#source /wynton/home/fraserlab/swankowicz/phenix-installer-dev-3594-intel-linux-2.6-x86_64-centos6/phenix-dev-3594/phenix_env.sh
 export PHENIX_OVERWRITE_ALL=true
 
 PDB=$1
