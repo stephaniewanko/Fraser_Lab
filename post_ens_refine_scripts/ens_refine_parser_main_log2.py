@@ -7,11 +7,10 @@
 
 import pandas as pd
 import os
-import datetime
 import argparse
 import sys
 
-def parse_log(log_file, output_name):
+def parse_log(log_file, PDB):
     ens_refine = pd.DataFrame()
     print(log_file)
     PDB = log_file.split('_')[0]
@@ -23,7 +22,6 @@ def parse_log(log_file, output_name):
     ens_refine.loc[1,'PDB'] = PDB
     ens_refine.loc[1,'pTLS'] = pTLS
     ens_refine.loc[1,'weights'] = weights
-    #ens_refine.loc[1,'output_location']=open(log_file, 'r').read().splitlines()[7]
     log_file.split()
     log=open(log_file, 'r')
     for line in log:
@@ -39,20 +37,14 @@ def parse_log(log_file, output_name):
            #print(line)
            ens_refine.loc[1,'Ens_Red'] = line.split('=')[1].strip('\n')
         elif line.startswith('  tx = '):
-           print(line)
-           #print(line.split('=')[1])
+           #print(line)
            ens_refine.loc[1,'tx'] = line.split('=')[1].strip('\n')
-    location=PDB+'_'+output_name+'_'+weights+'_'+pTLS+'_ens_refinement_output.csv'
-    print(ens_refine)
+    location=PDB + '_' + weights + '_' + pTLS + '_ens_refinement_output.csv'
     ens_refine.to_csv(location, index=False)
-    #with open('output_location.txt', 'w') as file: # this is going to overwrite
-    #    file.write(output_location)
-    #return output_location
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('Log_File')
-    parser.add_argument('output_name')
-    #parser.add_argument('PDB_name')
+    parser.add_argument('-log_file')
+    parser.add_argument('-PDB')
     args = parser.parse_args()
-    parse_log(args.Log_File, args.output_name)
+    parse_log(args.Log_File, args.PDB)
